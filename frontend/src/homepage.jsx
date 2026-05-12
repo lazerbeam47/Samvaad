@@ -166,10 +166,16 @@ function Nav() {
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-        {["Vision", "How it works", "Features", "Contact"].map((l) => (
+        {[
+          { label: "Vision", id: "vision" },
+          { label: "How it works", id: "how-it-works" },
+          { label: "Features", id: "features" },
+          { label: "Extension", id: "extension" },
+          { label: "Contact", id: "contact" },
+        ].map(({ label, id }) => (
           <a
-            key={l}
-            href="#"
+            key={id}
+            href={`#${id}`}
             style={{
               color: colors.textSecondary,
               textDecoration: "none",
@@ -179,7 +185,7 @@ function Nav() {
             onMouseEnter={(e) => (e.target.style.color = colors.textPrimary)}
             onMouseLeave={(e) => (e.target.style.color = colors.textSecondary)}
           >
-            {l}
+            {label}
           </a>
         ))}
       </div>
@@ -750,8 +756,13 @@ export default function SamvaadHome({ onStart }) {
                   fontWeight: 600,
                   cursor: "pointer",
                 }}
+                onClick={() =>
+                  document
+                    .getElementById("extension")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
               >
-                See how it works ↓
+                Get extension ↓
               </button>
             </div>
           </div>
@@ -865,6 +876,7 @@ export default function SamvaadHome({ onStart }) {
 
       {/* ── THE GAP ── */}
       <section
+        id="how-it-works"
         style={{
           padding: "96px 48px",
           borderTop: `1px solid ${colors.border}`,
@@ -928,6 +940,7 @@ export default function SamvaadHome({ onStart }) {
 
       {/* ── FEATURES ── */}
       <section
+        id="features"
         style={{
           padding: "96px 48px",
           borderTop: `1px solid ${colors.border}`,
@@ -1038,6 +1051,7 @@ export default function SamvaadHome({ onStart }) {
 
       {/* ── VISION / FUTURE ── */}
       <section
+        id="vision"
         style={{
           padding: "96px 48px",
           borderTop: `1px solid ${colors.border}`,
@@ -1101,6 +1115,214 @@ export default function SamvaadHome({ onStart }) {
               body="The goal was never to automate the human out. It's to make every agent as sharp as your best one — with real-time knowledge, confidence, and clarity on every call they take."
               delay={0.3}
             />
+          </div>
+        </div>
+      </section>
+
+      {/* ── EXTENSION ── */}
+      <section
+        id="extension"
+        style={{
+          padding: "96px 48px",
+          borderTop: `1px solid ${colors.border}`,
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1160,
+            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "1.15fr 0.85fr",
+            gap: 16,
+            alignItems: "stretch",
+          }}
+        >
+          <div
+            style={{
+              background: colors.surface,
+              border: `1px solid ${colors.border}`,
+              borderRadius: 20,
+              padding: "44px 40px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: -80,
+                right: -40,
+                width: 240,
+                height: 240,
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${colors.blueDim} 0%, transparent 70%)`,
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: colors.blue,
+                letterSpacing: "0.1em",
+                marginBottom: 18,
+              }}
+            >
+              BROWSER EXTENSION
+            </div>
+            <h3
+              style={{
+                fontSize: 32,
+                fontWeight: 800,
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1,
+                marginBottom: 14,
+                maxWidth: 540,
+              }}
+            >
+              Keep the web app. Launch it from any tab.
+            </h3>
+            <p
+              style={{
+                fontSize: 15,
+                color: colors.textSecondary,
+                lineHeight: 1.7,
+                marginBottom: 28,
+                maxWidth: 620,
+              }}
+            >
+              Samvaad stays as the main product UI. The extension just makes it
+              faster to try from the browser by opening the live copilot in a
+              dedicated popup or tab.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 12,
+                marginBottom: 26,
+              }}
+            >
+              {[
+                "Launch home or live demo",
+                "Open a narrow testing popup",
+                "Optional floating launcher on pages",
+                "Point it at local or deployed Samvaad",
+              ].map((item) => (
+                <div
+                  key={item}
+                  style={{
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    border: `1px solid ${colors.border}`,
+                    background: "rgba(255,255,255,0.02)",
+                    fontSize: 13,
+                    color: colors.textSecondary,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+            <a
+              href="https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: colors.accent,
+                color: "#080C14",
+                borderRadius: 10,
+                padding: "13px 24px",
+                fontSize: 15,
+                fontWeight: 700,
+              }}
+            >
+              Load unpacked extension
+            </a>
+          </div>
+
+          <div
+            style={{
+              background: colors.surface,
+              border: `1px solid ${colors.border}`,
+              borderRadius: 20,
+              padding: "44px 36px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: colors.accent,
+                letterSpacing: "0.1em",
+                marginBottom: 18,
+              }}
+            >
+              QUICK SETUP
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              {[
+                {
+                  step: "01",
+                  text: "Run the Samvaad backend and frontend locally.",
+                },
+                {
+                  step: "02",
+                  text: "Load the extension folder in Chrome or another Chromium browser.",
+                },
+                {
+                  step: "03",
+                  text: "Set the web app URL in the extension popup and launch the live demo.",
+                },
+              ].map(({ step, text }) => (
+                <div
+                  key={step}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "42px 1fr",
+                    gap: 14,
+                    alignItems: "start",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: 12,
+                      background: colors.accentDim,
+                      color: colors.accent,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {step}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      color: colors.textSecondary,
+                      lineHeight: 1.65,
+                      paddingTop: 6,
+                    }}
+                  >
+                    {text}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -1310,6 +1532,7 @@ export default function SamvaadHome({ onStart }) {
 
       {/* ── FOOTER ── */}
       <footer
+        id="contact"
         style={{
           borderTop: `1px solid ${colors.border}`,
           padding: "40px 48px",
