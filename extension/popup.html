@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Samvaad</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Samvaad</p>
+        <h1>Browser launcher</h1>
+        <p class="copy">
+          Keep the web app as the main product and use this extension to open the
+          live copilot faster while testing from any tab.
+        </p>
+      </section>
+
+      <section class="panel">
+        <label class="field">
+          <span class="label">Web app URL</span>
+          <input id="appOrigin" type="url" placeholder="http://localhost:5174" />
+        </label>
+
+        <label class="toggle">
+          <input id="showFloatingLauncher" type="checkbox" />
+          <span>Show floating launcher on pages</span>
+        </label>
+
+        <div class="actions">
+          <button id="openHome" class="primary">Open home</button>
+          <button id="openDemo">Open live demo</button>
+          <button id="openPopup">Open demo popup</button>
+        </div>
+
+        <p id="status" class="status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

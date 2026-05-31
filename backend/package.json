@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +21,7 @@
     "groq-sdk": "^0.37.0",
     "nodemon": "^3.1.11",
     "ollama": "^0.6.3",
+    "openai": "^6.34.0",
     "path": "^0.12.7",
     "socket.io": "^4.8.1"
   }

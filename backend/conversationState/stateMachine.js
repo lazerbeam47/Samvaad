@@ -1,4 +1,4 @@
-const {STATES,TRANSITIONS}=require("./stateDefinitions");
+const {STATES}=require("./stateDefinitions");
 const {scoreSignals}=require("./riskScore");
 const stateStore=require("./stateStore");
 
@@ -15,14 +15,19 @@ function processNLU(sessionId,nluOutput){
     //Decide state transition based on NLU intent
     let nextState=state.currentState;
 
+    const intent =
+        typeof nluOutput.intent === "string"
+            ? nluOutput.intent
+            : nluOutput.intent?.label;
+
     if(risk>60)nextState=STATES.ESCALATION;
-    else if(nluOutput.intent==="objection")nextState=STATES.OBJECTION;
-    else if(nluOutput.intent==="purchase")nextState=STATES.DECISION;
+    else if(intent==="objection")nextState=STATES.OBJECTION;
+    else if(intent==="purchase")nextState=STATES.DECISION;
 
     if(nextState!==state.currentState){
         stateStore.updateState(sessionId,{
             currentState:nextState,
-            lastStateChangeAt:Data.now(),
+            lastStateChangeAt:Date.now(),
         });
     }
 
@@ -32,7 +37,7 @@ function processNLU(sessionId,nluOutput){
     });
 
     return {
-        statae:nextState,
+        state:nextState,
         risk,
         opportunity,
     };

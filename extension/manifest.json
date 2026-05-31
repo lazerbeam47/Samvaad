@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Samvaad Launcher",
+  "version": "0.1.0",
+  "description": "Launch the Samvaad copilot web app from the browser while testing live calls.",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Samvaad",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

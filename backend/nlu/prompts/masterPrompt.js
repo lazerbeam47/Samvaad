@@ -4,12 +4,15 @@ module.exports = function buildMasterPrompt(transcript) {
   // Limit context to last ~2500 chars (faster + more relevant)
   const recent = t.length > 2500 ? t.slice(-2500) : t;
 
-  // Extract last 1–2 lines (most important for suggestions)
+  // Extract the latest customer line; suggestions should respond to the customer.
   const lines = t.split("\n").filter(Boolean);
-  const lastUtterance = lines.slice(-2).join(" ");
+  const customerLines = lines.filter((line) => /^CUSTOMER:/i.test(line));
+  const lastCustomerUtterance =
+    customerLines.at(-1)?.replace(/^CUSTOMER:\s*/i, "") || lines.at(-1) || "";
 
   return `
 You are a real-time Agent Assist AI helping a human agent during a live call.
+You generate suggestions FOR THE AGENT, not for the customer.
 
 Return ONLY valid JSON. No explanation. No markdown.
 
@@ -25,7 +28,13 @@ STRICT JSON SCHEMA:
     "sentiment": "positive"|"neutral"|"negative",
     "follow_up_date": string|null
   },
-  "actions": string[]
+  "actions": string[],
+  "conversation_state": {
+    "phase": "UNKNOWN"|"OPENING"|"DISCOVERY"|"EXPLANATION"|"OBJECTION"|"DECISION"|"CLOSING"|"ESCALATION",
+    "risk": number,
+    "opportunity": number,
+    "reason": string
+  }
 }
 
 ------------------------
@@ -43,7 +52,7 @@ Generate 2–3 HIGH QUALITY suggestions.
 Each suggestion MUST:
 - be ONE sentence
 - sound like what a real human agent would say next
-- be specific to the LATEST USER MESSAGE (not generic)
+- be specific to the LATEST CUSTOMER MESSAGE (not generic)
 - help move the conversation forward
 - be actionable (ask a question OR guide next step)
 
@@ -63,8 +72,9 @@ BAD EXAMPLES (DO NOT GENERATE):
 - "Okay noted"
 
 3. CONTEXT FOCUS:
-- PRIORITIZE the LATEST USER MESSAGE over older transcript
-- Use past context only if necessary
+- PRIORITIZE the LATEST CUSTOMER message over older transcript
+- Use AGENT messages only as context for what has already been said
+- Never generate suggestions in response to the agent's own latest message
 
 4. COMPLIANCE:
 - Detect risky phrases (false promises, guarantees, sensitive claims)
@@ -85,7 +95,12 @@ BAD EXAMPLES (DO NOT GENERATE):
   - "Follow up with pricing details"
   - "Schedule callback"
 
-7. STYLE:
+7. CONVERSATION STATE:
+- phase should reflect the current call stage
+- risk and opportunity should be numbers from 0 to 100
+- reason should briefly explain the phase/risk/opportunity decision
+
+8. STYLE:
 - Be concise
 - Be relevant
 - Be practical (real-world agent behavior)
@@ -97,8 +112,8 @@ INPUT
 Recent Conversation:
 ${recent}
 
-Latest User Message:
-${lastUtterance}
+Latest Customer Message:
+${lastCustomerUtterance}
 
 ------------------------
 OUTPUT

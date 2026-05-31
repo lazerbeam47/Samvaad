@@ -13,10 +13,11 @@ function getState(sessionId){
     return store.get(sessionId);
 }
 
-function updateState(sessionId,newState){
+function updateState(sessionId,updates){
     const state=store.get(sessionId);
     if(!state)return;
     Object.assign(state,updates);
+    return state;
 }
 
 function clearState(sessionId){

@@ -77,6 +77,10 @@ npm run dev
 
 Frontend dev server (Vite) defaults to port 5173.
 
+3. Browser extension (optional)
+
+Load `/Users/dabbumothsera/Desktop/Samvaad/extension` as an unpacked Chrome extension to launch the existing Samvaad web app from any browser tab.
+
 Quick dev helper (macOS)
 
 ```bash

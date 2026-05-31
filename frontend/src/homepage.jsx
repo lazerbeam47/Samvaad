@@ -87,7 +87,7 @@ function WaveformBar({ delay, h }) {
   );
 }
 
-function Nav() {
+function Nav({ compact = false }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -112,8 +112,10 @@ function Nav() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 48px",
-        height: 64,
+        padding: compact ? "0 18px" : "0 48px",
+        minHeight: 64,
+        gap: compact ? 14 : 0,
+        flexWrap: compact ? "wrap" : "nowrap",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -165,32 +167,34 @@ function Nav() {
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-        {[
-          { label: "Vision", id: "vision" },
-          { label: "How it works", id: "how-it-works" },
-          { label: "Features", id: "features" },
-          { label: "Extension", id: "extension" },
-          { label: "Contact", id: "contact" },
-        ].map(({ label, id }) => (
-          <a
-            key={id}
-            href={`#${id}`}
-            style={{
-              color: colors.textSecondary,
-              textDecoration: "none",
-              fontSize: 14,
-              fontWeight: 500,
-            }}
-            onMouseEnter={(e) => (e.target.style.color = colors.textPrimary)}
-            onMouseLeave={(e) => (e.target.style.color = colors.textSecondary)}
-          >
-            {label}
-          </a>
-        ))}
-      </div>
+      {!compact && (
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          {[
+            { label: "Vision", id: "vision" },
+            { label: "How it works", id: "how-it-works" },
+            { label: "Features", id: "features" },
+            { label: "Extension", id: "extension" },
+            { label: "Contact", id: "contact" },
+          ].map(({ label, id }) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              style={{
+                color: colors.textSecondary,
+                textDecoration: "none",
+                fontSize: 14,
+                fontWeight: 500,
+              }}
+              onMouseEnter={(e) => (e.target.style.color = colors.textPrimary)}
+              onMouseLeave={(e) => (e.target.style.color = colors.textSecondary)}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      )}
 
-      <div style={{ display: "flex", gap: 10 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <div
           style={{
             display: "flex",
@@ -570,6 +574,17 @@ function FutureCard({ icon, title, body, delay = 0 }) {
 export default function SamvaadHome({ onStart }) {
   const navigate = useNavigate();
   const [heroRef, heroVisible] = useInView(0.05);
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window === "undefined" ? 1440 : window.innerWidth,
+  );
+  const isMobile = viewportWidth < 900;
+  const isTablet = viewportWidth >= 900 && viewportWidth < 1180;
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return (
     <div
@@ -594,7 +609,7 @@ export default function SamvaadHome({ onStart }) {
         a { text-decoration:none; }
       `}</style>
 
-      <Nav />
+      <Nav compact={isMobile || isTablet} />
 
       {/* ── HERO ── */}
       <section
@@ -604,7 +619,7 @@ export default function SamvaadHome({ onStart }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "120px 48px 80px",
+          padding: isMobile ? "112px 18px 56px" : "120px 48px 80px",
           overflow: "hidden",
         }}
       >
@@ -614,8 +629,8 @@ export default function SamvaadHome({ onStart }) {
             top: "18%",
             left: "50%",
             transform: "translateX(-50%)",
-            width: 700,
-            height: 700,
+            width: isMobile ? 360 : 700,
+            height: isMobile ? 360 : 700,
             borderRadius: "50%",
             background: `radial-gradient(circle, ${colors.accentGlow} 0%, transparent 68%)`,
             pointerEvents: "none",
@@ -770,7 +785,7 @@ export default function SamvaadHome({ onStart }) {
           {/* Live demo row */}
           <div
             style={{
-              marginTop: 72,
+              marginTop: isMobile ? 52 : 72,
               display: "flex",
               gap: 20,
               justifyContent: "center",
@@ -789,7 +804,7 @@ export default function SamvaadHome({ onStart }) {
                 display: "flex",
                 flexDirection: "column",
                 gap: 12,
-                width: 256,
+                width: isMobile ? "100%" : 256,
                 flexShrink: 0,
               }}
             >
@@ -878,7 +893,7 @@ export default function SamvaadHome({ onStart }) {
       <section
         id="how-it-works"
         style={{
-          padding: "96px 48px",
+          padding: isMobile ? "72px 18px" : "96px 48px",
           borderTop: `1px solid ${colors.border}`,
         }}
       >
@@ -942,7 +957,7 @@ export default function SamvaadHome({ onStart }) {
       <section
         id="features"
         style={{
-          padding: "96px 48px",
+          padding: isMobile ? "72px 18px" : "96px 48px",
           borderTop: `1px solid ${colors.border}`,
         }}
       >
@@ -1053,7 +1068,7 @@ export default function SamvaadHome({ onStart }) {
       <section
         id="vision"
         style={{
-          padding: "96px 48px",
+          padding: isMobile ? "72px 18px" : "96px 48px",
           borderTop: `1px solid ${colors.border}`,
         }}
       >
@@ -1123,7 +1138,7 @@ export default function SamvaadHome({ onStart }) {
       <section
         id="extension"
         style={{
-          padding: "96px 48px",
+          padding: isMobile ? "72px 18px" : "96px 48px",
           borderTop: `1px solid ${colors.border}`,
         }}
       >
@@ -1132,7 +1147,7 @@ export default function SamvaadHome({ onStart }) {
             maxWidth: 1160,
             margin: "0 auto",
             display: "grid",
-            gridTemplateColumns: "1.15fr 0.85fr",
+            gridTemplateColumns: isMobile ? "1fr" : "1.15fr 0.85fr",
             gap: 16,
             alignItems: "stretch",
           }}
@@ -1142,7 +1157,7 @@ export default function SamvaadHome({ onStart }) {
               background: colors.surface,
               border: `1px solid ${colors.border}`,
               borderRadius: 20,
-              padding: "44px 40px",
+              padding: isMobile ? "32px 22px" : "44px 40px",
               position: "relative",
               overflow: "hidden",
             }}
@@ -1250,7 +1265,7 @@ export default function SamvaadHome({ onStart }) {
               background: colors.surface,
               border: `1px solid ${colors.border}`,
               borderRadius: 20,
-              padding: "44px 36px",
+              padding: isMobile ? "32px 22px" : "44px 36px",
             }}
           >
             <div
@@ -1328,12 +1343,12 @@ export default function SamvaadHome({ onStart }) {
       </section>
 
       {/* ── MANIFESTO QUOTE ── */}
-      <section style={{ padding: "0 48px 96px" }}>
+      <section style={{ padding: isMobile ? "0 18px 72px" : "0 48px 96px" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
           <div
             style={{
               borderRadius: 24,
-              padding: "72px 64px",
+              padding: isMobile ? "48px 24px" : "72px 64px",
               background: colors.surface,
               border: `1px solid ${colors.borderBright}`,
               position: "relative",
@@ -1347,8 +1362,8 @@ export default function SamvaadHome({ onStart }) {
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%,-50%)",
-                width: 600,
-                height: 600,
+                width: isMobile ? 300 : 600,
+                height: isMobile ? 300 : 600,
                 borderRadius: "50%",
                 background: `radial-gradient(circle, ${colors.accentGlow} 0%, transparent 65%)`,
                 pointerEvents: "none",
@@ -1402,13 +1417,13 @@ export default function SamvaadHome({ onStart }) {
       </section>
 
       {/* ── EARLY ACCESS CTA ── */}
-      <section style={{ padding: "0 48px 96px" }}>
+      <section style={{ padding: isMobile ? "0 18px 72px" : "0 48px 96px" }}>
         <div
           style={{
             maxWidth: 1160,
             margin: "0 auto",
             display: "grid",
-            gridTemplateColumns: "1fr 1fr",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
             gap: 16,
             alignItems: "stretch",
           }}
@@ -1418,7 +1433,7 @@ export default function SamvaadHome({ onStart }) {
               background: colors.surface,
               border: `1px solid ${colors.border}`,
               borderRadius: 20,
-              padding: "48px 40px",
+              padding: isMobile ? "32px 22px" : "48px 40px",
             }}
           >
             <div
@@ -1476,7 +1491,7 @@ export default function SamvaadHome({ onStart }) {
               background: colors.surface,
               border: `1px solid ${colors.border}`,
               borderRadius: 20,
-              padding: "48px 40px",
+              padding: isMobile ? "32px 22px" : "48px 40px",
             }}
           >
             <div
@@ -1535,7 +1550,7 @@ export default function SamvaadHome({ onStart }) {
         id="contact"
         style={{
           borderTop: `1px solid ${colors.border}`,
-          padding: "40px 48px",
+          padding: isMobile ? "28px 18px" : "40px 48px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",

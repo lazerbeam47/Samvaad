@@ -184,6 +184,221 @@ function EmptyState({ label }) {
   );
 }
 
+
+function ConfidencePill({ value }) {
+  const numeric = typeof value === "number" ? value : Number(value);
+  const confidence = Number.isFinite(numeric) ? Math.max(0, Math.min(1, numeric)) : null;
+  const label = confidence === null ? "MED" : `${Math.round(confidence * 100)}%`;
+  const color = confidence === null || confidence >= 0.7 ? C.accent : confidence >= 0.45 ? C.amber : C.textMuted;
+  const bg = confidence === null || confidence >= 0.7 ? C.accentDim : confidence >= 0.45 ? C.amberDim : "rgba(255,255,255,0.04)";
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        color,
+        background: bg,
+        border: `1px solid ${color}28`,
+        borderRadius: 100,
+        padding: "2px 8px",
+        fontSize: 10,
+        fontWeight: 800,
+        letterSpacing: "0.04em",
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+const getSuggestionText = (item) => {
+  if (typeof item === "string") return item;
+  if (!item || typeof item !== "object") return String(item || "");
+  return item.text || item.suggestion || item.message || item.reply || String(item);
+};
+
+const getSuggestionConfidence = (item, fallback) => {
+  if (item && typeof item === "object") {
+    const value = item.confidence ?? item.score ?? item.probability;
+    if (value !== undefined) return Number(value);
+  }
+  return typeof fallback === "number" ? fallback : 0.68;
+};
+
+const formatDuration = (startedAt, endedAt) => {
+  const start = Number(startedAt);
+  const end = Number(endedAt);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return "--:--";
+  const seconds = Math.max(0, Math.round((end - start) / 1000));
+  return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+};
+
+function SummaryList({ title, items, accent = C.textSub }) {
+  return (
+    <section style={{ minWidth: 0 }}>
+      <div
+        style={{
+          fontSize: 10,
+          color: accent,
+          fontWeight: 800,
+          letterSpacing: "0.08em",
+          marginBottom: 10,
+        }}
+      >
+        {title.toUpperCase()}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {items?.length ? (
+          items.map((item, i) => (
+            <div
+              key={i}
+              style={{
+                background: C.surfaceLow,
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                padding: "10px 12px",
+                color: C.text,
+                fontSize: 13,
+                lineHeight: 1.5,
+              }}
+            >
+              {item}
+            </div>
+          ))
+        ) : (
+          <div style={{ color: C.textMuted, fontSize: 12 }}>None captured.</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function CrmGrid({ fields = {} }) {
+  const entries = Object.entries(fields || {});
+  return (
+    <section>
+      <div
+        style={{
+          fontSize: 10,
+          color: C.accent,
+          fontWeight: 800,
+          letterSpacing: "0.08em",
+          marginBottom: 10,
+        }}
+      >
+        CRM FIELDS
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+          gap: 8,
+        }}
+      >
+        {entries.length ? (
+          entries.map(([key, value]) => (
+            <div
+              key={key}
+              style={{
+                background: C.surfaceLow,
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                padding: "10px 12px",
+                minWidth: 0,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 10,
+                  color: C.textMuted,
+                  fontWeight: 800,
+                  letterSpacing: "0.07em",
+                  marginBottom: 5,
+                }}
+              >
+                {key.replaceAll("_", " ").toUpperCase()}
+              </div>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: value ? C.text : C.textMuted,
+                  fontWeight: 600,
+                  wordBreak: "break-word",
+                }}
+              >
+                {value === null || value === undefined || value === "" ? "--" : String(value)}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div style={{ color: C.textMuted, fontSize: 12 }}>No CRM fields captured.</div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function TranscriptBubble({ line }) {
+  const isCustomer = line.speaker === "customer";
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: isCustomer ? "flex-start" : "flex-end",
+        marginBottom: 14,
+        animation: "fadeSlideUp 0.3s ease",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "78%",
+          minWidth: 0,
+          background: isCustomer ? C.surfaceHigh : C.accentDim,
+          border: `1px solid ${isCustomer ? C.borderBright : C.accent + "28"}`,
+          borderRadius: isCustomer ? "8px 8px 8px 2px" : "8px 8px 2px 8px",
+          padding: "10px 12px",
+          boxShadow: isCustomer ? "none" : `0 0 18px ${C.accentGlow}`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            marginBottom: 5,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 900,
+              color: isCustomer ? C.blue : C.accent,
+              letterSpacing: "0.08em",
+            }}
+          >
+            {isCustomer ? "CUSTOMER" : "AGENT"}
+          </span>
+        </div>
+        <div
+          style={{
+            fontFamily: "'DM Mono','Fira Mono',monospace",
+            fontSize: 13,
+            color: C.text,
+            lineHeight: 1.65,
+            overflowWrap: "anywhere",
+          }}
+        >
+          {line.text}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const TARGET_SAMPLE_RATE = 16000; // Deepgram optimal
@@ -192,6 +407,9 @@ const CHUNK_SAMPLES = TARGET_SAMPLE_RATE / 4; // 1600 = 100ms per emit
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 const LiveCall = () => {
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window === "undefined" ? 1440 : window.innerWidth,
+  );
   const [connected, setConnected] = useState(false);
   const [interim, setInterim] = useState("");
   const [chunksCount, setChunksCount] = useState(0);
@@ -200,7 +418,7 @@ const LiveCall = () => {
   const [sessionShort, setSessionShort] = useState("—");
   const [sttReady, setSttReady] = useState(false);
   const [errorNotice, setErrorNotice] = useState("");
-  const [speakerMode, setSpeakerMode] = useState("customer");
+  const [captureMode, setCaptureMode] = useState("Dual stream");
 
   const [intent, setIntent] = useState({});
   const [suggestions, setSuggestions] = useState([]);
@@ -208,6 +426,10 @@ const LiveCall = () => {
   const [crm, setCrm] = useState({});
   const [actions, setActions] = useState([]);
   const [conversationState, setConversationState] = useState(null);
+  const [transcriptLines, setTranscriptLines] = useState([]);
+  const [callSummary, setCallSummary] = useState(null);
+  const [callHistory, setCallHistory] = useState([]);
+  const [activeView, setActiveView] = useState("live");
 
   const visualizerRef = useRef(null);
   const animIdRef = useRef(null);
@@ -216,15 +438,22 @@ const LiveCall = () => {
   const seqRef = useRef(0);
   const socketRef = useRef(null);
   const isRecordingRef = useRef(false);
-  const speakerModeRef = useRef("customer");
   const timerRef = useRef(null);
   const transcriptRef = useRef(null);
+  const isMobile = viewportWidth < 900;
+  const isTablet = viewportWidth >= 900 && viewportWidth < 1220;
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // auto-scroll transcript
   useEffect(() => {
     if (transcriptRef.current)
       transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
-  }, [interim]);
+  }, [transcriptLines]);
 
   // call timer
   useEffect(() => {
@@ -239,12 +468,6 @@ const LiveCall = () => {
   const fmt = (s) =>
     `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-  const setSpeaker = (speaker) => {
-    if (isRecording) return;
-    speakerModeRef.current = speaker;
-    setSpeakerMode(speaker);
-  };
-
   // ── SOCKET ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     const sock = io("http://localhost:3000");
@@ -256,6 +479,10 @@ const LiveCall = () => {
       if (!sessionIdRef.current) sessionIdRef.current = `session-${Date.now()}`;
       setSessionShort("…" + sessionIdRef.current.slice(-8));
       sock.emit("join", { sessionId: sessionIdRef.current });
+      fetch("http://localhost:3000/api/calls")
+        .then((r) => r.json())
+        .then((data) => setCallHistory(Array.isArray(data.calls) ? data.calls : []))
+        .catch(() => {});
     });
     sock.on("disconnect", () => {
       setConnected(false);
@@ -277,16 +504,22 @@ const LiveCall = () => {
     sock.on("agent-compliance", ({ flags }) => setComplianceFlags(flags));
     sock.on("agent-crm", ({ fields }) => setCrm(fields));
     sock.on("agent-actions", ({ actions }) => setActions(actions));
+    sock.on("call-summary", (record) => {
+      setCallSummary(record);
+      setActiveView("summary");
+      setCallHistory((prev) => [record, ...prev.filter((c) => c.id !== record.id)].slice(0, 20));
+    });
 
     // FIX 4: only append final transcripts — no interim flicker
     sock.on("interim-transcript", (payload) => {
       if (!payload?.text?.trim()) return;
       if (payload.isFinal) {
-        const speaker = payload.speaker === "agent" ? "Agent" : "Customer";
+        const role = payload.speaker === "agent" ? "agent" : "customer";
+        const speaker = role === "agent" ? "Agent" : "Customer";
+        const text = payload.text.trim();
+        setTranscriptLines((prev) => [...prev, { speaker: role, text }]);
         setInterim((prev) =>
-          prev
-            ? `${prev}\n${speaker}: ${payload.text.trim()}`
-            : `${speaker}: ${payload.text.trim()}`,
+          prev ? `${prev}\n${speaker}: ${text}` : `${speaker}: ${text}`,
         );
       }
     });
@@ -310,100 +543,71 @@ const LiveCall = () => {
     if (!socketRef.current || isRecordingRef.current) return;
     isRecordingRef.current = true;
     setIsRecording(true);
+    setCaptureMode("Starting dual stream");
     setCallDuration(0);
+    setCallSummary(null);
+    setActiveView("live");
+    setTranscriptLines([]);
+    setInterim("");
+    setIntent({});
+    setSuggestions([]);
+    setComplianceFlags([]);
+    setCrm({});
+    setActions([]);
 
-    let stream;
+    let micStream;
+    let tabStream;
+
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
+      try {
+        // getDisplayMedia must run directly from the click activation.
+        // Capture the call tab first, then ask for mic permissions.
+        tabStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+        });
+      } catch (err) {
+        console.error("Tab audio capture failed:", err);
+        throw err;
+      }
+
+      if (!tabStream.getAudioTracks().length) {
+        throw new Error("TAB_AUDIO_MISSING");
+      }
+
+      micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          // FIX 2: enable all browser audio enhancements for better accuracy
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
         },
       });
+
       setErrorNotice("");
     } catch (err) {
+      console.error("Audio capture failed:", err);
+      micStream?.getTracks().forEach((track) => track.stop());
+      tabStream?.getTracks().forEach((track) => track.stop());
       isRecordingRef.current = false;
       setIsRecording(false);
+      setCaptureMode("Dual stream");
       setErrorNotice(
-        err?.name === "NotAllowedError"
-          ? "Microphone permission was denied."
-          : "Microphone could not start.",
+        err?.message === "TAB_AUDIO_MISSING"
+          ? "No tab audio was shared. Start again and select the call tab with audio sharing enabled."
+          : err?.name === "NotAllowedError"
+            ? "Microphone or tab audio permission was denied."
+            : err?.name === "InvalidStateError"
+              ? "Tab audio capture must be started from the Start call button. Try again and select the call tab."
+              : `Audio capture could not start${err?.name ? `: ${err.name}` : ""}.`,
       );
       return;
     }
 
-    const audioContext = new AudioContext();
-    const browserRate = audioContext.sampleRate;
-    console.log(
-      `🎙 Browser rate: ${browserRate}Hz → downsampling to ${TARGET_SAMPLE_RATE}Hz`,
-    );
-
-    const source = audioContext.createMediaStreamSource(stream);
-    const gain = audioContext.createGain();
-    gain.gain.value = 2.0; // FIX 3: raised from 1.5 to 2.0 for better signal
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.85;
-
-    source.connect(gain);
-    gain.connect(analyser);
-
-    // ── Canvas visualizer ──
-    const canvas = visualizerRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      canvas.width = canvas.height = 80;
-      const data = new Uint8Array(analyser.fftSize);
-
-      const draw = () => {
-        if (!isRecordingRef.current) return;
-        analyser.getByteTimeDomainData(data);
-        let sum = 0;
-        for (let i = 0; i < data.length; i++) {
-          const v = (data[i] - 128) / 128;
-          sum += v * v;
-        }
-        const level = Math.min(1, Math.sqrt(sum / data.length) * 4);
-        ctx.clearRect(0, 0, 80, 80);
-        ctx.save();
-        ctx.translate(40, 40);
-        [
-          { r: 30 + level * 20, a: 0.07 + level * 0.1 },
-          { r: 22 + level * 10, a: 0.14 + level * 0.1 },
-        ].forEach(({ r, a }) => {
-          ctx.beginPath();
-          ctx.arc(0, 0, r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0,229,160,${a})`;
-          ctx.fill();
-        });
-        ctx.beginPath();
-        ctx.arc(0, 0, 13 + level * 6, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,229,160,${0.88 + level * 0.12})`;
-        ctx.fill();
-        ctx.restore();
-        animIdRef.current = requestAnimationFrame(draw);
-      };
-      draw();
-    }
-
-    // ── Audio pipeline ──
-    // Use AudioWorkletNode instead of deprecated ScriptProcessorNode.
-    // We create a small inline worklet module via a blob URL so the app
-    // does not require an extra static file. The worklet posts Float32
-    // frames to the main thread where we downsample + chunk exactly like
-    // the previous implementation.
-
-    let accumulator = new Float32Array(0);
-
-    // Inline worklet source. Keep this minimal.
     const workletCode = `
       class RecorderProcessor extends AudioWorkletProcessor {
         process (inputs) {
           const input = inputs[0];
           if (input && input[0]) {
-            // postMessage the Float32Array channel data to the main thread
             this.port.postMessage(input[0]);
           }
           return true;
@@ -412,60 +616,133 @@ const LiveCall = () => {
       registerProcessor('recorder-processor', RecorderProcessor);
     `;
 
-    // Register the worklet module from a blob URL
-    const blob = new Blob([workletCode], { type: "application/javascript" });
-    const url = URL.createObjectURL(blob);
-    await audioContext.audioWorklet.addModule(url);
-    URL.revokeObjectURL(url);
+    const createPipeline = async ({ stream, speaker, eventName, visualize }) => {
+      const audioContext = new AudioContext();
+      const browserRate = audioContext.sampleRate;
+      console.log(
+        `🎙 ${speaker} browser rate: ${browserRate}Hz → downsampling to ${TARGET_SAMPLE_RATE}Hz`,
+      );
 
-    const processor = new AudioWorkletNode(audioContext, "recorder-processor", {
-      numberOfInputs: 1,
-      numberOfOutputs: 0,
-      channelCount: 1,
-    });
+      const source = audioContext.createMediaStreamSource(stream);
+      const gain = audioContext.createGain();
+      gain.gain.value = speaker === "agent" ? 2.0 : 1.0;
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.85;
 
-    // Connect the graph: source -> gain -> worklet. The worklet has no outputs.
-    gain.connect(processor);
+      const blob = new Blob([workletCode], { type: "application/javascript" });
+      const url = URL.createObjectURL(blob);
+      await audioContext.audioWorklet.addModule(url);
+      URL.revokeObjectURL(url);
 
-    processor.port.onmessage = (e) => {
-      if (!isRecordingRef.current) return;
+      const processor = new AudioWorkletNode(audioContext, "recorder-processor", {
+        numberOfInputs: 1,
+        numberOfOutputs: 0,
+        channelCount: 1,
+      });
 
-      // e.data is a Float32Array (frame) from the worklet
-      const raw = e.data;
-      const ds = downsample(raw, browserRate, TARGET_SAMPLE_RATE);
+      source.connect(gain);
+      gain.connect(analyser);
+      gain.connect(processor);
 
-      const next = new Float32Array(accumulator.length + ds.length);
-      next.set(accumulator, 0);
-      next.set(ds, accumulator.length);
-      accumulator = next;
+      if (visualize) {
+        const canvas = visualizerRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          canvas.width = canvas.height = 80;
+          const data = new Uint8Array(analyser.fftSize);
 
-      while (accumulator.length >= CHUNK_SAMPLES) {
-        const chunk = accumulator.slice(0, CHUNK_SAMPLES);
-        accumulator = accumulator.slice(CHUNK_SAMPLES);
-
-        const pcm16 = toInt16(chunk);
-
-        // send raw binary FIRST, metadata object second
-        socketRef.current.emit("audio-chunk", pcm16.buffer, {
-          sessionId: sessionIdRef.current,
-          speaker: speakerModeRef.current,
-          seq: seqRef.current++,
-          sampleRate: TARGET_SAMPLE_RATE,
-        });
-
-        setChunksCount((c) => c + 1);
+          const draw = () => {
+            if (!isRecordingRef.current) return;
+            analyser.getByteTimeDomainData(data);
+            let sum = 0;
+            for (let i = 0; i < data.length; i++) {
+              const v = (data[i] - 128) / 128;
+              sum += v * v;
+            }
+            const level = Math.min(1, Math.sqrt(sum / data.length) * 4);
+            ctx.clearRect(0, 0, 80, 80);
+            ctx.save();
+            ctx.translate(40, 40);
+            [
+              { r: 30 + level * 20, a: 0.07 + level * 0.1 },
+              { r: 22 + level * 10, a: 0.14 + level * 0.1 },
+            ].forEach(({ r, a }) => {
+              ctx.beginPath();
+              ctx.arc(0, 0, r, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(0,229,160,${a})`;
+              ctx.fill();
+            });
+            ctx.beginPath();
+            ctx.arc(0, 0, 13 + level * 6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(0,229,160,${0.88 + level * 0.12})`;
+            ctx.fill();
+            ctx.restore();
+            animIdRef.current = requestAnimationFrame(draw);
+          };
+          draw();
+        }
       }
+
+      let accumulator = new Float32Array(0);
+      processor.port.onmessage = (e) => {
+        if (!isRecordingRef.current) return;
+
+        const raw = e.data;
+        const ds = downsample(raw, browserRate, TARGET_SAMPLE_RATE);
+
+        const next = new Float32Array(accumulator.length + ds.length);
+        next.set(accumulator, 0);
+        next.set(ds, accumulator.length);
+        accumulator = next;
+
+        while (accumulator.length >= CHUNK_SAMPLES) {
+          const chunk = accumulator.slice(0, CHUNK_SAMPLES);
+          accumulator = accumulator.slice(CHUNK_SAMPLES);
+
+          const pcm16 = toInt16(chunk);
+          socketRef.current.emit(eventName, pcm16.buffer, {
+            sessionId: sessionIdRef.current,
+            speaker,
+            seq: seqRef.current++,
+            sampleRate: TARGET_SAMPLE_RATE,
+          });
+
+          setChunksCount((c) => c + 1);
+        }
+      };
+
+      return { processor, source, stream, analyser, audioContext };
     };
 
-    // Keep the same shape in mediaRecorderRef for compatibility with cleanup
-    mediaRecorderRef.current = {
-      processor,
-      source,
-      stream,
-      analyser,
-      audioContext,
-    };
-  }; // ← closes startRecording
+    try {
+      const pipelines = await Promise.all([
+        createPipeline({
+          stream: micStream,
+          speaker: "agent",
+          eventName: "mic-audio-chunk",
+          visualize: true,
+        }),
+        createPipeline({
+          stream: tabStream,
+          speaker: "customer",
+          eventName: "tab-audio-chunk",
+          visualize: false,
+        }),
+      ]);
+
+      mediaRecorderRef.current = { pipelines };
+      setCaptureMode("Mic + tab audio");
+    } catch (err) {
+      console.error("Audio pipeline setup failed:", err);
+      micStream.getTracks().forEach((track) => track.stop());
+      tabStream.getTracks().forEach((track) => track.stop());
+      isRecordingRef.current = false;
+      setIsRecording(false);
+      setCaptureMode("Dual stream");
+      setErrorNotice("Audio processing could not start.");
+    }
+  };
 
   // ── STOP RECORDING ─────────────────────────────────────────────────────────
   const stopRecording = () => {
@@ -477,12 +754,16 @@ const LiveCall = () => {
     if (c) c.getContext("2d")?.clearRect(0, 0, c.width, c.height);
 
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.processor?.disconnect();
-      mediaRecorderRef.current.source?.disconnect();
-      mediaRecorderRef.current.audioContext?.close();
-      mediaRecorderRef.current.stream?.getTracks().forEach((t) => t.stop());
+      const pipelines = mediaRecorderRef.current.pipelines || [mediaRecorderRef.current];
+      pipelines.forEach((pipeline) => {
+        pipeline.processor?.disconnect();
+        pipeline.source?.disconnect();
+        pipeline.audioContext?.close();
+        pipeline.stream?.getTracks().forEach((t) => t.stop());
+      });
       mediaRecorderRef.current = null;
     }
+    setCaptureMode("Dual stream");
     socketRef.current?.emit("end-call", { sessionId: sessionIdRef.current });
   };
 
@@ -491,7 +772,7 @@ const LiveCall = () => {
     <div
       style={{
         minHeight: "100vh",
-        height: "100vh",
+        height: isMobile ? "auto" : "100vh",
         background: C.bg,
         color: C.text,
         fontFamily: "'DM Sans','Helvetica Neue',sans-serif",
@@ -519,15 +800,16 @@ const LiveCall = () => {
       {/* ══ TOPBAR ═══════════════════════════════════════════════════════════ */}
       <header
         style={{
-          height: C.navH,
+          minHeight: C.navH,
           flexShrink: 0,
           background: "rgba(6,10,17,0.95)",
           backdropFilter: "blur(24px)",
           borderBottom: `1px solid ${C.border}`,
           display: "flex",
           alignItems: "center",
-          padding: "0 20px",
-          gap: 0,
+          flexWrap: "wrap",
+          padding: isMobile ? "12px 14px" : "0 20px",
+          gap: isMobile ? 12 : 0,
         }}
       >
         {/* Logo */}
@@ -590,41 +872,32 @@ const LiveCall = () => {
         </div>
 
         {/* Call controls */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+            width: isMobile ? "100%" : "auto",
+          }}
+        >
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 3,
+              gap: 8,
               background: C.surfaceLow,
               border: `1px solid ${C.border}`,
               borderRadius: 8,
-              padding: 3,
+              padding: "7px 10px",
+              fontSize: 11,
+              fontWeight: 700,
+              color: C.textSub,
             }}
           >
-            {[
-              { key: "customer", label: "Customer" },
-              { key: "agent", label: "Agent" },
-            ].map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setSpeaker(key)}
-                disabled={isRecording}
-                style={{
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "5px 10px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  cursor: isRecording ? "not-allowed" : "pointer",
-                  color: speakerMode === key ? "#060A11" : C.textSub,
-                  background: speakerMode === key ? C.accent : "transparent",
-                  opacity: isRecording && speakerMode !== key ? 0.4 : 1,
-                }}
-              >
-                {label}
-              </button>
-            ))}
+            <span style={{ color: C.accent }}>Mic</span>
+            <span style={{ color: C.textMuted }}>+</span>
+            <span style={{ color: C.blue }}>Tab audio</span>
           </div>
           <button
             onClick={startRecording}
@@ -692,10 +965,18 @@ const LiveCall = () => {
           </button>
         </div>
 
-        <div style={{ flex: 1 }} />
+        {!isMobile && <div style={{ flex: 1 }} />}
 
         {/* Right status strip */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+            width: isMobile ? "100%" : "auto",
+          }}
+        >
           {isRecording && (
             <Tag color={C.accent} bg={C.accentDim}>
               <PulseDot size={6} color={C.accent} />
@@ -756,8 +1037,17 @@ const LiveCall = () => {
         style={{
           flex: 1,
           display: "grid",
-          gridTemplateColumns: "248px 1fr 296px",
-          overflow: "hidden",
+          gridTemplateColumns: isMobile
+            ? "1fr"
+            : isTablet
+              ? "280px minmax(0, 1fr)"
+              : "248px minmax(0, 1fr) 296px",
+          gridTemplateAreas: isMobile
+            ? '"center" "left" "right"'
+            : isTablet
+              ? '"left center" "right right"'
+              : '"left center right"',
+          overflow: isMobile ? "visible" : "hidden",
           gap: "0 1px",
           background: C.border,
         }}
@@ -765,6 +1055,7 @@ const LiveCall = () => {
         {/* ── LEFT ─────────────────────────────────────────────────────── */}
         <div
           style={{
+            gridArea: "left",
             background: C.bg,
             display: "flex",
             flexDirection: "column",
@@ -887,6 +1178,7 @@ const LiveCall = () => {
             {[
               { k: "ID", v: sessionShort },
               { k: "Chunks sent", v: chunksCount },
+              { k: "Capture", v: captureMode },
               { k: "Sample rate", v: `${TARGET_SAMPLE_RATE / 1000}kHz` },
             ].map(({ k, v }) => (
               <div
@@ -1006,15 +1298,69 @@ const LiveCall = () => {
               </div>
             )}
           </div>
+
+          {/* Call history */}
+          <div
+            style={{
+              padding: "16px 18px",
+              borderTop: `1px solid ${C.border}`,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: C.textMuted,
+                letterSpacing: "0.09em",
+                marginBottom: 10,
+              }}
+            >
+              CALL HISTORY
+            </div>
+            {callHistory.length ? (
+              callHistory.slice(0, 4).map((call) => (
+                <div
+                  key={call.id}
+                  style={{
+                    padding: "9px 0",
+                    borderBottom: `1px solid ${C.border}`,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 8,
+                      marginBottom: 5,
+                    }}
+                  >
+                    <span style={{ fontSize: 11, color: C.textSub, fontWeight: 700 }}>
+                      {new Date(call.endedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <span style={{ fontSize: 10, color: C.textMuted }}>
+                      {call.summary?.turnCount || 0} turns
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.45 }}>
+                    {call.summary?.discussed?.[0] || "Summary pending"}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <EmptyState label="Past calls appear here." />
+            )}
+          </div>
         </div>
 
-        {/* ── CENTER: transcript ────────────────────────────────────────── */}
+        {/* ── CENTER: live transcript, summary, history ─────────────────────── */}
         <div
           style={{
+            gridArea: "center",
             background: C.bg,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
+            minWidth: 0,
           }}
         >
           <div
@@ -1024,144 +1370,230 @@ const LiveCall = () => {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              gap: 12,
               flexShrink: 0,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
               <div
                 style={{
                   width: 26,
                   height: 26,
                   borderRadius: 7,
-                  background: C.accentDim,
-                  border: `1px solid ${C.accent}22`,
+                  background: activeView === "summary" ? C.amberDim : activeView === "history" ? C.blueDim : C.accentDim,
+                  border: `1px solid ${activeView === "summary" ? C.amber + "25" : activeView === "history" ? C.blue + "25" : C.accent + "22"}`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 12,
                 }}
               >
-                🎙️
+                {activeView === "summary" ? "§" : activeView === "history" ? "◷" : "•"}
               </div>
               <span
                 style={{
                   fontSize: 11,
-                  fontWeight: 700,
-                  color: C.accent,
+                  fontWeight: 800,
+                  color: activeView === "summary" ? C.amber : activeView === "history" ? C.blue : C.accent,
                   letterSpacing: "0.06em",
                 }}
               >
-                LIVE TRANSCRIPT
+                {activeView === "summary" ? "POST CALL SUMMARY" : activeView === "history" ? "CALL HISTORY" : "LIVE TRANSCRIPT"}
               </span>
             </div>
-            {isRecording ? (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: C.accent,
-                }}
-              >
-                <PulseDot size={6} />
-                Listening…
-              </div>
-            ) : (
-              <span style={{ fontSize: 11, color: C.textMuted }}>Idle</span>
-            )}
-          </div>
-
-          <div
-            ref={transcriptRef}
-            style={{ flex: 1, overflowY: "auto", padding: "20px 22px" }}
-          >
-            {interim.trim() ? (
-              interim
-                .trim()
-                .split("\n")
-                .filter(Boolean)
-                .map((line, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      gap: 12,
-                      marginBottom: 14,
-                      animation: "fadeSlideUp 0.3s ease",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: "50%",
-                        background: C.accent,
-                        flexShrink: 0,
-                        marginTop: 8,
-                        opacity: 0.45,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: "'DM Mono','Fira Mono',monospace",
-                        fontSize: 13,
-                        color: C.text,
-                        lineHeight: 1.75,
-                      }}
-                    >
-                      {line}
-                    </span>
-                  </div>
-                ))
-            ) : (
-              <div
-                style={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 14,
-                  opacity: 0.4,
-                }}
-              >
-                <div
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              {[{ key: "live", label: "Live" }, { key: "summary", label: "Summary", disabled: !callSummary }, { key: "history", label: "History" }].map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => !item.disabled && setActiveView(item.key)}
+                  disabled={item.disabled}
                   style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: "50%",
-                    background: C.accentDim,
-                    border: `1px solid ${C.accent}18`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 22,
+                    border: `1px solid ${activeView === item.key ? C.borderBright : C.border}`,
+                    background: activeView === item.key ? C.surfaceHigh : "transparent",
+                    color: item.disabled ? C.textMuted : activeView === item.key ? C.text : C.textSub,
+                    borderRadius: 7,
+                    padding: "5px 10px",
+                    fontSize: 11,
+                    fontWeight: 800,
+                    cursor: item.disabled ? "not-allowed" : "pointer",
+                    opacity: item.disabled ? 0.4 : 1,
                   }}
                 >
-                  🎙️
+                  {item.label}
+                </button>
+              ))}
+              {activeView === "live" && isRecording && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: C.accent,
+                  }}
+                >
+                  <PulseDot size={6} />
+                  Listening
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{ fontSize: 14, fontWeight: 600, color: C.textSub }}
-                  >
-                    No transcript yet
-                  </div>
-                  <div
-                    style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}
-                  >
-                    Start a call to begin capturing
-                  </div>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+
+          {activeView === "summary" && callSummary?.summary ? (
+            <div style={{ flex: 1, overflowY: "auto", padding: "22px", display: "flex", flexDirection: "column", gap: 18 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)",
+                  gap: 10,
+                }}
+              >
+                {[
+                  ["Duration", formatDuration(callSummary.startedAt, callSummary.endedAt), C.accent],
+                  ["Turns", callSummary.summary.turnCount || 0, C.blue],
+                  ["Ended", new Date(callSummary.endedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), C.amber],
+                ].map(([label, value, color]) => (
+                  <div key={label} style={{ background: C.surfaceLow, border: `1px solid ${C.border}`, borderRadius: 8, padding: "13px 14px" }}>
+                    <div style={{ color: C.textMuted, fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", marginBottom: 7 }}>{label.toUpperCase()}</div>
+                    <div style={{ color, fontSize: 20, fontWeight: 900, fontFamily: "'DM Mono',monospace" }}>{value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isMobile ? "1fr" : "repeat(3, minmax(0, 1fr))",
+                  gap: 14,
+                }}
+              >
+                <SummaryList title="Discussed" items={callSummary.summary.discussed} accent={C.blue} />
+                <SummaryList title="Decisions" items={callSummary.summary.decisions} accent={C.amber} />
+                <SummaryList title="Action items" items={callSummary.summary.action_items} accent={C.pink} />
+              </div>
+
+              <CrmGrid fields={callSummary.summary.crm_fields} />
+
+              {callSummary.summary.transcript && (
+                <section>
+                  <div style={{ fontSize: 10, color: C.textMuted, fontWeight: 800, letterSpacing: "0.08em", marginBottom: 10 }}>
+                    TRANSCRIPT SNAPSHOT
+                  </div>
+                  <div
+                    style={{
+                      background: C.surfaceLow,
+                      border: `1px solid ${C.border}`,
+                      borderRadius: 8,
+                      padding: "12px 14px",
+                      color: C.textSub,
+                      fontSize: 12,
+                      lineHeight: 1.7,
+                      whiteSpace: "pre-wrap",
+                      maxHeight: 220,
+                      overflow: "auto",
+                      fontFamily: "'DM Mono',monospace",
+                    }}
+                  >
+                    {callSummary.summary.transcript}
+                  </div>
+                </section>
+              )}
+            </div>
+          ) : activeView === "history" ? (
+            <div style={{ flex: 1, overflowY: "auto", padding: "18px 22px" }}>
+              {callHistory.length ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {callHistory.map((call) => (
+                    <button
+                      key={call.id}
+                      onClick={() => {
+                        setCallSummary(call);
+                        setActiveView("summary");
+                      }}
+                      style={{
+                        textAlign: "left",
+                        background: C.surfaceLow,
+                        border: `1px solid ${C.border}`,
+                        borderRadius: 8,
+                        padding: "13px 14px",
+                        cursor: "pointer",
+                        color: C.text,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800 }}>
+                          {new Date(call.endedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+                          <Tag color={C.blue} bg={C.blueDim}>{formatDuration(call.startedAt, call.endedAt)}</Tag>
+                          <Tag color={C.textSub} bg="rgba(255,255,255,0.04)">{call.summary?.turnCount || 0} turns</Tag>
+                        </div>
+                      </div>
+                      <div style={{ color: C.textSub, fontSize: 12, lineHeight: 1.55 }}>
+                        {call.summary?.discussed?.[0] || call.summary?.action_items?.[0] || "No summary line captured."}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <EmptyState label="Completed calls will appear here." />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              ref={transcriptRef}
+              style={{ flex: 1, overflowY: "auto", padding: "20px 22px" }}
+            >
+              {transcriptLines.length ? (
+                transcriptLines.map((line, i) => <TranscriptBubble key={i} line={line} />)
+              ) : (
+                <div
+                  style={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 14,
+                    opacity: 0.45,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: "50%",
+                      background: C.accentDim,
+                      border: `1px solid ${C.accent}18`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 22,
+                    }}
+                  >
+                    •
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: C.textSub }}>
+                      No transcript yet
+                    </div>
+                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>
+                      Start a call to begin capturing both sides
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── RIGHT: agent assist ───────────────────────────────────────── */}
         <div
           style={{
+            gridArea: "right",
             background: C.bg,
             display: "flex",
             flexDirection: "column",
@@ -1200,129 +1632,175 @@ const LiveCall = () => {
             )}
           </div>
 
-          {/* Intent */}
+          {/* What to say next */}
           <div style={{ borderBottom: `1px solid ${C.border}` }}>
-            <PanelHeader icon="⚡" label="INTENT" accent={C.amber} />
-            <div style={{ padding: "12px 18px" }}>
-              {intent?.label ? (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 8,
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: C.text,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {intent.label}
-                  </span>
-                  {intent.confidence !== undefined && (
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 700,
-                        color: C.amber,
-                        background: C.amberDim,
-                        border: `1px solid ${C.amber}28`,
-                        borderRadius: 100,
-                        padding: "2px 9px",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {Math.round((intent.confidence || 0) * 100)}%
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <EmptyState label="Awaiting analysis…" />
-              )}
-            </div>
-          </div>
-
-          {/* Reply suggestions */}
-          <div style={{ borderBottom: `1px solid ${C.border}` }}>
-            <PanelHeader icon="💬" label="REPLY SUGGESTIONS" accent={C.blue} />
+            <PanelHeader
+              icon="→"
+              label="WHAT TO SAY NEXT"
+              accent={C.blue}
+              right={intent?.confidence !== undefined ? <ConfidencePill value={intent.confidence} /> : null}
+            />
             <div
               style={{
                 padding: "10px 18px",
                 display: "flex",
                 flexDirection: "column",
-                gap: 7,
+                gap: 8,
               }}
             >
+              {intent?.label && (
+                <div
+                  style={{
+                    background: C.amberDim,
+                    border: `1px solid ${C.amber}25`,
+                    borderRadius: 8,
+                    padding: "9px 11px",
+                    marginBottom: 2,
+                  }}
+                >
+                  <div style={{ fontSize: 10, color: C.amber, fontWeight: 900, letterSpacing: "0.07em", marginBottom: 4 }}>
+                    DETECTED INTENT
+                  </div>
+                  <div style={{ fontSize: 12, color: C.text, fontWeight: 700, lineHeight: 1.45 }}>
+                    {intent.label}
+                  </div>
+                </div>
+              )}
+
               {suggestions?.length > 0 ? (
-                suggestions.map((s, i) => (
+                suggestions.map((item, i) => {
+                  const text = getSuggestionText(item);
+                  const confidence = getSuggestionConfidence(item, intent?.confidence);
+                  const low = confidence < 0.45;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        background: low ? "rgba(255,255,255,0.03)" : C.surfaceLow,
+                        border: `1px solid ${low ? C.border : C.blue + "28"}`,
+                        borderRadius: 8,
+                        padding: "10px 11px",
+                        opacity: low ? 0.72 : 1,
+                        animation: "fadeSlideUp 0.3s ease",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ color: low ? C.textMuted : C.blue, fontSize: 10, fontWeight: 900, letterSpacing: "0.07em" }}>
+                          SUGGESTION {i + 1}
+                        </span>
+                        <ConfidencePill value={confidence} />
+                      </div>
+                      <div style={{ color: low ? C.textSub : C.text, fontSize: 12, lineHeight: 1.55 }}>
+                        {text}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <EmptyState label="Suggestions appear during the call." />
+              )}
+            </div>
+          </div>
+
+          {/* Compliance flags */}
+          <div style={{ borderBottom: `1px solid ${C.border}` }}>
+            <PanelHeader
+              icon="!"
+              label="COMPLIANCE FLAG"
+              accent={complianceFlags?.length ? C.red : C.textMuted}
+              right={complianceFlags?.length ? <Tag color={C.red} bg={C.redDim}>{complianceFlags.length}</Tag> : null}
+            />
+            <div
+              style={{
+                padding: "10px 18px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+              }}
+            >
+              {complianceFlags?.length > 0 ? (
+                complianceFlags.map((flag, i) => (
                   <div
                     key={i}
                     style={{
-                      display: "flex",
-                      gap: 8,
-                      alignItems: "center",
-                      padding: "8px 12px",
-                      borderBottom:
-                        i < suggestions.length - 1
-                          ? `1px solid ${C.border}`
-                          : "none",
+                      padding: "9px 12px",
+                      border: `1px solid ${C.red}25`,
+                      background: C.redDim,
+                      borderRadius: 8,
+                      animation: "fadeSlideUp 0.3s ease",
                     }}
                   >
-                    <span style={{ fontSize: 12, color: C.textSub }}>{s}</span>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: C.red,
+                        fontWeight: 900,
+                        letterSpacing: "0.07em",
+                        marginBottom: 4,
+                      }}
+                    >
+                      {(flag.severity || "medium").toUpperCase()}
+                    </div>
+                    <div style={{ fontSize: 12, color: C.text, lineHeight: 1.5 }}>
+                      {flag.message || flag.type || String(flag)}
+                    </div>
                   </div>
                 ))
               ) : (
-                <EmptyState label="Suggestions appear during call…" />
+                <EmptyState label="No compliance flags." />
               )}
+            </div>
+          </div>
 
-              {/* CRM fields (render if present) */}
-              {Object.keys(crm || {}).length > 0 && (
-                <div style={{ marginTop: 8 }}>
-                  {Object.entries(crm).map(([k, v], idx, arr) => (
-                    <div
-                      key={k}
+          {/* Key info */}
+          <div style={{ borderBottom: `1px solid ${C.border}` }}>
+            <PanelHeader
+              icon="i"
+              label="KEY INFO DETECTED"
+              accent={C.accent}
+              right={Object.keys(crm || {}).length ? <Tag color={C.accent} bg={C.accentDim}>{Object.keys(crm || {}).length}</Tag> : null}
+            />
+            <div style={{ padding: "10px 18px" }}>
+              {Object.keys(crm || {}).length > 0 ? (
+                Object.entries(crm).map(([k, v], idx, arr) => (
+                  <div
+                    key={k}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                      gap: 8,
+                      padding: "8px 0",
+                      borderBottom: idx < arr.length - 1 ? `1px solid ${C.border}` : "none",
+                    }}
+                  >
+                    <span
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "baseline",
-                        gap: 8,
-                        padding: "8px 12px",
-                        borderBottom:
-                          idx < arr.length - 1
-                            ? `1px solid ${C.border}`
-                            : "none",
+                        fontSize: 10,
+                        color: C.textMuted,
+                        fontWeight: 800,
+                        letterSpacing: "0.07em",
+                        flexShrink: 0,
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: 10,
-                          color: C.textMuted,
-                          fontWeight: 700,
-                          letterSpacing: "0.07em",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {k.toUpperCase()}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: C.accent,
-                          fontWeight: 600,
-                          fontFamily: "'DM Mono',monospace",
-                          textAlign: "right",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {String(v)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                      {k.replaceAll("_", " ").toUpperCase()}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: v ? C.accent : C.textMuted,
+                        fontWeight: 700,
+                        fontFamily: "'DM Mono',monospace",
+                        textAlign: "right",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {v === null || v === undefined || v === "" ? "--" : String(v)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <EmptyState label="Extracted details appear here." />
               )}
             </div>
           </div>
