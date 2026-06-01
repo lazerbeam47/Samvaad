@@ -175,22 +175,56 @@ function Nav({ compact = false }) {
             { label: "Features", id: "features" },
             { label: "Extension", id: "extension" },
             { label: "Contact", id: "contact" },
-          ].map(({ label, id }) => (
-            <a
-              key={id}
-              href={`#${id}`}
-              style={{
-                color: colors.textSecondary,
-                textDecoration: "none",
-                fontSize: 14,
-                fontWeight: 500,
-              }}
-              onMouseEnter={(e) => (e.target.style.color = colors.textPrimary)}
-              onMouseLeave={(e) => (e.target.style.color = colors.textSecondary)}
-            >
-              {label}
-            </a>
-          ))}
+          ].map(({ label, id }) => {
+            // Special-case the Contact link to open the user's mail client
+            if (id === "contact") {
+              const mailto = `mailto:dabbumothsera@gmail.com?subject=${encodeURIComponent("inquiry regarding samvaad")}`;
+              return (
+                <a
+                  key={id}
+                  href={mailto}
+                  style={{
+                    color: colors.textSecondary,
+                    textDecoration: "none",
+                    fontSize: 14,
+                    fontWeight: 500,
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Contact via email"
+                  onMouseEnter={(e) =>
+                    (e.target.style.color = colors.textPrimary)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.target.style.color = colors.textSecondary)
+                  }
+                >
+                  {label}
+                </a>
+              );
+            }
+
+            return (
+              <a
+                key={id}
+                href={`#${id}`}
+                style={{
+                  color: colors.textSecondary,
+                  textDecoration: "none",
+                  fontSize: 14,
+                  fontWeight: 500,
+                }}
+                onMouseEnter={(e) =>
+                  (e.target.style.color = colors.textPrimary)
+                }
+                onMouseLeave={(e) =>
+                  (e.target.style.color = colors.textSecondary)
+                }
+              >
+                {label}
+              </a>
+            );
+          })}
         </div>
       )}
 
@@ -223,6 +257,10 @@ function Nav({ compact = false }) {
             fontWeight: 700,
             cursor: "pointer",
           }}
+          onClick={() =>
+            window.open("https://github.com/lazerbeam47/Samvaad-", "_blank")
+          }
+          aria-label="Request early access"
         >
           Request early access
         </button>
@@ -586,6 +624,88 @@ export default function SamvaadHome({ onStart }) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Modal state and helpers for Privacy / Terms popups
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalBody, setModalBody] = useState(null);
+
+  const openModal = (title, body) => {
+    setModalTitle(title);
+    setModalBody(body);
+    setModalOpen(true);
+  };
+  const closeModal = () => {
+    setModalOpen(false);
+    setModalTitle("");
+    setModalBody(null);
+  };
+
+  const privacyBody = (
+    <div>
+      <p>
+        Samvaad collects audio, transcripts, and limited metadata (session
+        timestamps, speaker role annotations, and device information) to provide
+        real-time transcription, conversation intelligence, and post-call
+        summaries. We retain data to enable session playback, improve
+        transcription quality, and provide features such as CRM autofill and
+        action-item extraction.
+      </p>
+
+      <p>
+        We do not sell personal data. Aggregated and anonymized usage metrics
+        may be shared with partners for product improvement, but these do not
+        identify individual users. To request data export or deletion, contact
+        us at dabbumothsera@gmail.com and we'll respond to verified requests.
+      </p>
+
+      <p>
+        Security: Samvaad uses industry-standard protections for data in transit
+        (TLS) and at rest. Access to production data is restricted to authorized
+        personnel and audited. For high-sensitivity use cases, we recommend
+        redaction or filtering before sharing sensitive data in calls.
+      </p>
+
+      <p>
+        Third parties: Samvaad may use third-party providers (STT vendors, LLM
+        providers, analytics) who process data on our behalf under contract.
+        Review provider-specific terms if required for compliance.
+      </p>
+    </div>
+  );
+
+  const termsBody = (
+    <div>
+      <p>
+        By using Samvaad you agree to these Terms of Service. Use the product
+        lawfully and only with the rights to process any audio you submit. You
+        are responsible for obtaining any required consents for recording and
+        processing conversations.
+      </p>
+
+      <p>
+        Service scope: Samvaad provides conversation intelligence features
+        (real-time transcription, suggested replies, intent detection,
+        compliance flags, and post-call summaries). Features are provided
+        "as-is" and may evolve over time; we do not guarantee specific outputs
+        from using the product.
+      </p>
+
+      <p>
+        Acceptable use: Do not use Samvaad for unlawful activities or attempts
+        to reverse-engineer integrations. We may suspend or terminate access for
+        abusive behaviour, security risks, or repeated violations of these
+        terms.
+      </p>
+
+      <p>
+        Liability: to the extent permitted by law, Samvaad and its providers are
+        not liable for indirect, incidental, or consequential damages resulting
+        from use of the service. For enterprise licensing or support, contact
+        dabbumothsera@gmail.com.
+      </p>
+    </div>
+  );
+
   return (
     <div
       style={{
@@ -605,6 +725,14 @@ export default function SamvaadHome({ onStart }) {
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         @keyframes heroIn { from { opacity:0; transform:translateY(36px); } to { opacity:1; transform:translateY(0); } }
         @keyframes glowPulse { 0%,100% { opacity:0.45; transform:scale(1); } 50% { opacity:0.75; transform:scale(1.06); } }
+
+        /* Ensure full-page background matches app and prevent white flash on overscroll */
+        html, body, #root {
+          height: 100%;
+          background: #080C14;
+          overscroll-behavior: contain;
+        }
+
         html { scroll-behavior:smooth; }
         a { text-decoration:none; }
       `}</style>
@@ -1342,208 +1470,75 @@ export default function SamvaadHome({ onStart }) {
         </div>
       </section>
 
-      {/* ── MANIFESTO QUOTE ── */}
-      <section style={{ padding: isMobile ? "0 18px 72px" : "0 48px 96px" }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
-          <div
-            style={{
-              borderRadius: 24,
-              padding: isMobile ? "48px 24px" : "72px 64px",
-              background: colors.surface,
-              border: `1px solid ${colors.borderBright}`,
-              position: "relative",
-              overflow: "hidden",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%,-50%)",
-                width: isMobile ? 300 : 600,
-                height: isMobile ? 300 : 600,
-                borderRadius: "50%",
-                background: `radial-gradient(circle, ${colors.accentGlow} 0%, transparent 65%)`,
-                pointerEvents: "none",
-              }}
-            />
-            <div
-              style={{
-                position: "relative",
-                zIndex: 1,
-                maxWidth: 680,
-                margin: "0 auto",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 80,
-                  color: colors.accent,
-                  lineHeight: 0.6,
-                  marginBottom: 32,
-                  fontWeight: 800,
-                }}
-              >
-                "
-              </div>
-              <p
-                style={{
-                  fontSize: "clamp(18px, 2.5vw, 26px)",
-                  fontWeight: 500,
-                  color: colors.textPrimary,
-                  lineHeight: 1.55,
-                  marginBottom: 40,
-                  fontStyle: "italic",
-                }}
-              >
-                A conversation is the most natural thing a human does. We're
-                building the intelligence layer that makes every one count.
-              </p>
-              <div
-                style={{
-                  fontSize: 13,
-                  color: colors.textMuted,
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                }}
-              >
-                THE SAMVAAD TEAM
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── EARLY ACCESS CTA ── */}
-      <section style={{ padding: isMobile ? "0 18px 72px" : "0 48px 96px" }}>
+      {/* ── PRIVACY / TERMS (static content) ── */}
+      {/* Conditionally rendered modal for Privacy / Terms */}
+      {modalOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
           style={{
-            maxWidth: 1160,
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
-            gap: 16,
-            alignItems: "stretch",
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1200,
+            padding: 20,
           }}
+          onClick={closeModal}
         >
           <div
+            onClick={(e) => e.stopPropagation()}
             style={{
               background: colors.surface,
               border: `1px solid ${colors.border}`,
-              borderRadius: 20,
-              padding: isMobile ? "32px 22px" : "48px 40px",
+              borderRadius: 12,
+              width: "min(920px, 96%)",
+              maxHeight: "80vh",
+              overflow: "auto",
+              padding: 20,
             }}
           >
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: colors.accent,
-                letterSpacing: "0.1em",
-                marginBottom: 20,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 12,
               }}
             >
-              FOR TEAMS
+              <h3
+                style={{ margin: 0, fontSize: 18, color: colors.textPrimary }}
+              >
+                {modalTitle}
+              </h3>
+              <button
+                onClick={closeModal}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: colors.textSecondary,
+                  fontSize: 18,
+                  cursor: "pointer",
+                }}
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
             </div>
-            <h3
-              style={{
-                fontSize: 28,
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-                marginBottom: 14,
-              }}
-            >
-              Join the waitlist
-            </h3>
-            <p
-              style={{
-                fontSize: 15,
-                color: colors.textSecondary,
-                lineHeight: 1.7,
-                marginBottom: 32,
-              }}
-            >
-              We're onboarding a small group of contact centers and sales teams
-              to test Samvaad in real production environments. If you run a team
-              that lives on calls, we want to hear from you.
-            </p>
-            <button
-              style={{
-                background: colors.accent,
-                border: "none",
-                color: "#080C14",
-                borderRadius: 10,
-                padding: "13px 30px",
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: "pointer",
-                boxShadow: `0 0 36px ${colors.accentGlow}`,
-              }}
-            >
-              Request early access →
-            </button>
-          </div>
-
-          <div
-            style={{
-              background: colors.surface,
-              border: `1px solid ${colors.border}`,
-              borderRadius: 20,
-              padding: isMobile ? "32px 22px" : "48px 40px",
-            }}
-          >
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: colors.blue,
-                letterSpacing: "0.1em",
-                marginBottom: 20,
-              }}
-            >
-              FOR BUILDERS
-            </div>
-            <h3
-              style={{
-                fontSize: 28,
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-                marginBottom: 14,
-              }}
-            >
-              Interested in the API?
-            </h3>
-            <p
-              style={{
-                fontSize: 15,
                 color: colors.textSecondary,
+                fontSize: 14,
                 lineHeight: 1.7,
-                marginBottom: 32,
               }}
             >
-              If you're building on top of voice or telephony infrastructure and
-              want to explore what a real-time intelligence layer could add,
-              let's talk. We're open to collaboration early.
-            </p>
-            <button
-              style={{
-                background: "transparent",
-                border: `1px solid ${colors.borderBright}`,
-                color: colors.textPrimary,
-                borderRadius: 10,
-                padding: "13px 30px",
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              Get in touch →
-            </button>
+              {modalBody}
+            </div>
           </div>
         </div>
-      </section>
+      )}
 
       {/* ── FOOTER ── */}
       <footer
@@ -1607,15 +1602,32 @@ export default function SamvaadHome({ onStart }) {
           Real-time AI for the conversations that matter.
         </div>
         <div style={{ display: "flex", gap: 28 }}>
-          {["Privacy", "Terms", "Contact"].map((l) => (
-            <a
-              key={l}
-              href="#"
-              style={{ color: colors.textMuted, fontSize: 13 }}
-            >
-              {l}
-            </a>
-          ))}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              openModal("Privacy Policy", privacyBody);
+            }}
+            style={{ color: colors.textMuted, fontSize: 13 }}
+          >
+            Privacy
+          </a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              openModal("Terms of Service", termsBody);
+            }}
+            style={{ color: colors.textMuted, fontSize: 13 }}
+          >
+            Terms
+          </a>
+          <a
+            href={`mailto:dabbumothsera@gmail.com?subject=${encodeURIComponent("inquiry regarding samvaad")}`}
+            style={{ color: colors.textMuted, fontSize: 13 }}
+          >
+            Contact
+          </a>
         </div>
       </footer>
     </div>
