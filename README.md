@@ -47,6 +47,7 @@ Status & work-in-progress
   - Add tests, CI, secure secret management and deployment scripts.
   - Improve UX and error handling.
 
+https://www.loom.com/share/ded112a3e3f54f6f82392d51947a0107
 Getting started (developer)
 
 Prereqs:
